@@ -2,11 +2,13 @@ import base64
 import dash
 from dash import html, dcc, callback, Input, Output, State
 from misc import keypointMappings
-from misc.dataConverter import *
+from misc.BSL_Backend import *
 import plotly.graph_objs as go
 import matplotlib.pyplot as plt
 import os
 import librosa
+import plotly.express as px
+import pandas as pd
 import numpy as np
 
 mp3_files = [file for file in os.listdir('audio/') if file.endswith('.mp3')]
@@ -33,11 +35,11 @@ app.layout = html.Div([
         
             html.Hr(),
 
-            html.P(['''This project was made as part of the Edinbrugh Napier thrid year group project module (module code) in cooperation with name name, to help aid in reasearch into Embodied music interaction (EMI) with British Sign Language (BSL). 
-            This basic analytic webapplication uses a pure python back end utilizing plotly dash for the graphing and dashing which runs on the flask framework.''']),
+            html.P(['''This project was made as part of the Edinburgh Napier third year group project module (module code) in cooperation with name name, to help aid in reasearch into Embodied music interaction (EMI) with British Sign Language (BSL). 
+            This basic analytic web application uses a pure python back end utilizing plotly dash for the graphing and dashing which runs on the flask framework.''']),
             
             html.Div(children=[
-                html.H1("Please upload a song and assoicated openpose file, or start by selecting a song below:"),
+                html.H1("Please upload a song and associated openpose file, or start by selecting a song below:"),
                 dcc.Upload(id='upload-data',
                         children=html.Div(['Drag and Drop or ',
                             html.A('Select Files')
@@ -165,7 +167,8 @@ app.layout = html.Div([
             
             dcc.Graph(id='scatter-plot', style={'height': '70vh', 'width': '100vw', 'max-height': '1080px', 'max-width': '1920px'}),
             dcc.Graph(id='waveform'),
-            dcc.Graph(id='deltas')
+            dcc.Graph(id='deltas'),
+            dcc.Graph(id="animation")
 
 
 ], style={
@@ -228,14 +231,14 @@ def update_graph(value1, value2, value3):
     traces = []
     fileName = 'data/' + value2[:-4] + '_' + value3 + '_features' + '.json'
     for keypoint in value1:
-        data = ConvertData(fileName,'',videoWidth=1,videoHeight=1)
+        data = ConvertData(fileName)
         x = data['body'][keypoint][0]
         y = data['body'][keypoint][1]
         traces.append(go.Scatter(x=x, y=1080-y, mode='markers', name=keypoint, marker=dict(opacity=0.5)))
         layout = go.Layout(
-        title='Scatter Plot with Checklists',
-        xaxis=dict(title='X-axis', range=[0, 1920]),
-        yaxis=dict(title='Y-axis', range=[0, 1080]),
+            title='Scatter Plot with Checklists',
+            xaxis=dict(title='X-axis', range=[0, 1920]),
+            yaxis=dict(title='Y-axis', range=[0, 1080]),
         )
     return {'data': traces, 'layout': layout}
 
@@ -287,7 +290,7 @@ def makeWaveFormGraph(value):
 def deltas(value1, value2, value3):
     traces = []
     fileName = 'data/' + value2[:-4] + '_' + value3 + '_features' + '.json'
-    data = ConvertData(fileName,'',videoWidth=1,videoHeight=1)
+    data = ConvertData(fileName)
     for keypoint in value1:
         x = []
         x.append(keypoint)
@@ -295,8 +298,9 @@ def deltas(value1, value2, value3):
         y.append(sum(abs(getDeltaFromPositions(data['body'][keypoint])[1])))
         traces.append(go.Bar(x=x, y=y, name=keypoint))
         layout = go.Layout(
-        title='Scatter Plot with Checklists')
+            title='Scatter Plot with Checklists')
     return {'data': traces, 'layout': layout}
+
 
 if __name__ == '__main__':
     app.run_server(port=8051, debug=True)

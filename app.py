@@ -17,58 +17,70 @@ mp3_files = [file for file in os.listdir('audio/') if file.endswith('.mp3')]
 app = dash.Dash(__name__)
 
 app.layout = html.Div([
-    html.Div([
-        html.H2(['Napier Group Project:'], style={
-            'font-size':20, 
-            'textAlign':'center',
-            'margin': 0,
-            'font-family': 'Helvetica'}),
-            html.H1("BSL in Embodied Music Interaction", style={
-                'font-size':30, 
-                'textAlign':'center',
-                'margin': 0,
-                'font-family': 'Helvetica'})
-    ]),
+        html.Div([
+            html.H2(['Napier Group Project:'], 
+                    style={
+                        'font-size':20, 
+                        'textAlign':'center',
+                        'margin': 0,
+                        'font-family': 'Helvetica'
+                        }),
+            html.H1("BSL in Embodied Music Interaction", 
+                    style={
+                        'font-size':30, 
+                        'textAlign':'center',
+                        'margin': 0,
+                        'font-family': 'Helvetica'})
+        ]),
         
-    html.Hr(),
+            html.Hr(),
 
-    html.P(['''This application was made as part of the Edinburgh Napier third year group project module [SOC09109] in cooparation with Dr Balandino Di Donato, To help aid with reasearch into Embodied music interaction (EMI) with British Sign Language (BSL).  
-        This basic web application uses a pure python back end utilizing plotlys dash framework for the graphing and general interactivity. Dash also runs using the lightweight flask web framework. For the scope, limitations and potential updates to the app 
-        please see the README file or associated final report.'''], style={'font-fmaily':'Helvetica'}),
+            html.P(['''This project was made as part of the Edinburgh Napier third year group project module (module code) in cooperation with name name, to help aid in reasearch into Embodied music interaction (EMI) with British Sign Language (BSL). 
+            This basic analytic web application uses a pure python back end utilizing plotly dash for the graphing and dashing which runs on the flask framework.''']),
             
-    html.Div(children=[
-        html.H1("Please upload a song and assoicated openpose file, or start by selecting a song below:"), dcc.Upload(id='upload-data', children=
-            html.Div(['Drag and Drop or ', html.A('Select Files')]),style={
-        'width': '100%',
-        'height': '60px',
-        'lineHeight': '60px',
-        'borderWidth': '1px',
-        'borderStyle': 'dashed',
-        'borderRadius': '5px',
-        'textAlign': 'center',
-        'margin': '10px'},multiple=True),
+            html.Div(children=[
+                html.H1("Please upload a song and associated openpose file, or start by selecting a song below:"),
+                dcc.Upload(id='upload-data',
+                        children=html.Div(['Drag and Drop or ',
+                            html.A('Select Files')
+            ]),style={
+                'width': '100%',
+                'height': '60px',
+                'lineHeight': '60px',
+                'borderWidth': '1px',
+                'borderStyle': 'dashed',
+                'borderRadius': '5px',
+                'textAlign': 'center',
+                'margin': '10px'
+            },multiple=True),
                 
-    html.Button('Upload', id='upload-button'),
-    html.Div(id='output-container'),
+            html.Button('Upload', id='upload-button'),
+            html.Div(id='output-container'),
 
-    html.Hr(style={
-        'margin-top': '20px',
-        'margin-bottom': '20px'}),
+            
+            html.Hr(style={
+                    'margin-top': '20px',
+                    'margin-bottom': '20px'}),
         
-    html.Label('Select a Song:'), dcc.RadioItems(options=[{'label': file, 'value': file} for file in mp3_files], id='song-selector', persistence="session"),
+            html.Label('Select a Song:'),
+            #dcc.RadioItems(options=[{'label': 'Apparat Goodbye', 'value': 'Apparat_Goodbye'},
+             #                       {'label': 'DaftPunk', 'value': 'daft'}], 
+              #                      id='song-selector', persistence="session"),
+                dcc.RadioItems(options=[{'label': file, 'value': file} for file in mp3_files], 
+                                  id='song-selector', persistence="session"),
                 
-    html.Hr(style={
-        'margin-top': '20px',
-        'margin-bottom': '20px'}),
+            html.Hr(style={
+                    'margin-top': '20px',
+                    'margin-bottom': '20px'}),
                     
-    html.Label('Select which participant:'),
-        dcc.RadioItems(options=[{'label': 'One', 'value': 'P1'},
-                                {'label': 'Two', 'value': 'P2'},
-                                {'label': 'Three', 'value': 'P3'}], id='participant-selector'),
+            html.Label('Select which participant:'),
+            dcc.RadioItems(options=[{'label': 'One', 'value': 'P1'},
+                                    {'label': 'Two', 'value': 'P2'},
+                                    {'label': 'Three', 'value': 'P3'}], id='participant-selector'),
         
-    html.Hr(style={
-        'margin-top': '20px',
-        'margin-bottom': '20px'}),
+            html.Hr(style={
+                    'margin-top': '20px',
+                    'margin-bottom': '20px'}),
         
             html.Label('Isolate particular body parts?'),
             dcc.RadioItems(options=[{'label':'Yes', 'value':'display'},
@@ -155,7 +167,8 @@ app.layout = html.Div([
             
             dcc.Graph(id='scatter-plot', style={'height': '70vh', 'width': '100vw', 'max-height': '1080px', 'max-width': '1920px'}),
             dcc.Graph(id='waveform'),
-            dcc.Graph(id='deltas')
+            dcc.Graph(id='deltas'),
+            dcc.Loading(dcc.Graph(id="animation"), type="cube")
 
 
 ], style={
@@ -218,14 +231,14 @@ def update_graph(value1, value2, value3):
     traces = []
     fileName = 'data/' + value2[:-4] + '_' + value3 + '_features' + '.json'
     for keypoint in value1:
-        data = ConvertData(fileName,'',videoWidth=1,videoHeight=1)
+        data = ConvertData(fileName)
         x = data['body'][keypoint][0]
         y = data['body'][keypoint][1]
         traces.append(go.Scatter(x=x, y=1080-y, mode='markers', name=keypoint, marker=dict(opacity=0.5)))
         layout = go.Layout(
-        title='Heatmap of Selected Keypoint Data',
-        xaxis=dict(title='Horizontal Movement', range=[0, 1920]),
-        yaxis=dict(title='Vertical Movement', range=[0, 1080]),
+            title='Heatmap of Selected Keypoint Data',
+            xaxis=dict(title='Horizontal Movement', range=[0, 1920]),
+            yaxis=dict(title='Vertical Movement', range=[0, 1080]),
         )
     return {'data': traces, 'layout': layout}
 
@@ -251,7 +264,8 @@ def save_uploaded_files(n_clicks, filenames, contents):
             html.P(f"File {filename} uploaded successfully") for filename in filenames
         ])
         
-## Waveform Callback
+# Waveform Callback
+
 @app.callback(
     Output('waveform', 'figure'),
     Input('song-selector', 'value'))
@@ -262,12 +276,12 @@ def makeWaveFormGraph(value):
         spectrogram = librosa.amplitude_to_db(np.abs(stft))
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=np.arange(len(y))/sr, y=y))
-        fig.update_layout(title='Audio Waveform Visualization',
+        fig.update_layout(title='Audio Clip Waveform Visualization',
                xaxis_title='Time (s)',
                yaxis_title='Amplitude')
         return fig    
     
-## Deltas Callback
+    #Deltas Callback
 @app.callback(
     Output('deltas', 'figure'),
     Input('bodyKeypoints', 'value'),
@@ -276,7 +290,7 @@ def makeWaveFormGraph(value):
 def deltas(value1, value2, value3):
     traces = []
     fileName = 'data/' + value2[:-4] + '_' + value3 + '_features' + '.json'
-    data = ConvertData(fileName,'',videoWidth=1,videoHeight=1)
+    data = ConvertData(fileName)
     for keypoint in value1:
         x = []
         x.append(keypoint)
@@ -284,9 +298,8 @@ def deltas(value1, value2, value3):
         y.append(sum(abs(getDeltaFromPositions(data['body'][keypoint])[1])))
         traces.append(go.Bar(x=x, y=y, name=keypoint))
         layout = go.Layout(
-        title='Sum of Selected Keypoint Delta')
+            title='Sum of Selected Keypoint Delta')
     return {'data': traces, 'layout': layout}
-
 
 @app.callback(
     Output('animation', 'figure'),

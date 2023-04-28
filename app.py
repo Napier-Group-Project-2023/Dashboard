@@ -32,9 +32,9 @@ app.layout = html.Div([
         
     html.Hr(),
 
-    html.P(['''This application was made as part of the Edinbrugh Napier thrid year group project module [SOC09109] in cooparation with Dr Balandino Di Donato, To help aid with reasearch into Embodied music interaction (EMI) with British Sign Language (BSL).  
+    html.P(['''This application was made as part of the Edinburgh Napier third year group project module [SOC09109] in cooparation with Dr Balandino Di Donato, To help aid with reasearch into Embodied music interaction (EMI) with British Sign Language (BSL).  
         This basic web application uses a pure python back end utilizing plotlys dash framework for the graphing and general interactivity. Dash also runs using the lightweight flask web framework. For the scope, limitations and potential updates to the app 
-        please see the README file or associated final report''']),
+        please see the README file or associated final report.'''], style={'font-fmaily':'Helvetica'}),
             
     html.Div(children=[
         html.H1("Please upload a song and assoicated openpose file, or start by selecting a song below:"), dcc.Upload(id='upload-data', children=

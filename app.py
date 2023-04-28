@@ -168,7 +168,7 @@ app.layout = html.Div([
             dcc.Graph(id='scatter-plot', style={'height': '70vh', 'width': '100vw', 'max-height': '1080px', 'max-width': '1920px'}),
             dcc.Graph(id='waveform'),
             dcc.Graph(id='deltas'),
-            dcc.Graph(id="animation")
+            dcc.Loading(dcc.Graph(id="animation"), type="cube")
 
 
 ], style={
@@ -301,6 +301,22 @@ def deltas(value1, value2, value3):
             title='Scatter Plot with Checklists')
     return {'data': traces, 'layout': layout}
 
+@app.callback(
+    Output('animation', 'figure'),
+    Input('song-selector', 'value'),
+    Input('participant-selector', 'value'))
+def animation(value1, value2):
+    fileName = 'data/' + value1[:-4] + '_' + value2 + '_features' + '.json'
+    data = ConvertData(fileName)
+    aniList = getAnimation(data)
+    aniListSp = aniList["body"] + aniList["face"] + aniList["hand_left"] + aniList['hand_right']
+    aniNP = np.array(aniListSp)
+    df = pd.DataFrame(aniNP, columns=['x', 'y', 'frame'])
+    print(df.head())
+    animation = px.scatter(df, x="x", y="y", animation_frame="frame", range_x=[0,1920], range_y=[0,1080], title="Animation", width=960, height=540)
+
+    return animation
+
 
 if __name__ == '__main__':
-    app.run_server(port=8051, debug=True)
+    app.run_server(port=8051, debug=False)
